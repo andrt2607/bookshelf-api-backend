@@ -21,10 +21,17 @@ const getAllBook = async (req, h) => {
     currentBooks = req.query.finished === '1' ? currentBooks.filter((book) => book.finished === true)
       : currentBooks.filter((book) => book.finished === false);
   }
+  const result = currentBooks.map((book) => (
+    {
+      id: book.id,
+      name: book.name,
+      publisher: book.publisher,
+    }
+  ));
   const response = h.response({
     status: 'success',
     data: {
-      books: currentBooks,
+      books: result,
     },
   });
   response.code(200);
@@ -34,11 +41,13 @@ const getAllBook = async (req, h) => {
 const getBookById = async (req, h) => {
   const { id } = req.params;
 
+  // console.log('ini id : ', id);
   const book = books.filter((n) => n.id === id)[0];
+  // console.log('book : ', book);
 
-  if (book !== undefined || !book) {
+  if (!book) {
     const response = h.response({
-      status: 'success',
+      status: 'fail',
       message: 'Buku tidak ditemukan',
     });
     response.code(404);
@@ -135,6 +144,15 @@ const postNewBook = async (req, h) => {
 const updateBook = async (req, h) => {
   const { id } = req.params;
 
+  if (!req.payload.name) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Gagal memperbarui buku. Mohon isi nama buku',
+    });
+    response.code(400);
+    return response;
+  }
+
   const {
     name,
     year,
@@ -145,6 +163,16 @@ const updateBook = async (req, h) => {
     readPage,
     reading,
   } = req.payload;
+
+  if (readPage > pageCount) {
+    const response = h.response({
+      status: 'fail',
+      message:
+        'Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount',
+    });
+    response.code(400);
+    return response;
+  }
 
   const updatedAt = new Date().toISOString();
 
