@@ -4,13 +4,30 @@ const { v4 } = require('uuid');
 const books = require('../services/books');
 
 const getAllBook = async (req, h) => {
+  let currentBooks = books;
+  if (req.query.name) {
+    // console.log(req.query.name)
+    currentBooks = currentBooks.filter((book) => book.name.toLowerCase()
+      .includes(req.query.name.toLowerCase()));
+    // currentBooks.includes(req.query.name);
+  }
+  if (req.query.reading) {
+    // console.log(req.query.reading);
+    currentBooks = req.query.reading === '1' ? currentBooks.filter((book) => book.reading === true)
+      : currentBooks.filter((book) => book.reading === false);
+  }
+  if (req.query.finished) {
+    // console.log(req.query.finished);
+    currentBooks = req.query.finished === '1' ? currentBooks.filter((book) => book.finished === true)
+      : currentBooks.filter((book) => book.finished === false);
+  }
   const response = h.response({
     status: 'success',
     data: {
-      books,
+      books: currentBooks,
     },
   });
-  response.code(201);
+  response.code(200);
   return response;
 };
 
